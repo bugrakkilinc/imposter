@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Background gradient -->
+    <path android:pathData="M0,0h108v108h-108z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="0" android:startY="0"
+                android:endX="108" android:endY="108"
+                android:type="linear">
+                <item android:color="#FF8B5CF6" android:offset="0.0" />
+                <item android:color="#FF3B1E8F" android:offset="0.55" />
+                <item android:color="#FF150F3A" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Shoulders / coat -->
+    <path android:fillColor="#FF0B0820"
+        android:pathData="M26,96c0,-14 11,-19 28,-19s28,5 28,19z" />
+    <!-- Collar highlight -->
+    <path android:fillColor="#FFEC4899"
+        android:pathData="M48,78l6,10l6,-10z" />
+    <!-- Shadowed face -->
+    <path android:fillColor="#FF0B0820"
+        android:pathData="M54,52a15,17 0,1 1,0 34a15,17 0,1 1,0 -34z" />
+    <!-- Glowing eyes -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M42,66l9,2.5l-9,2.5z" />
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M66,66l-9,2.5l9,2.5z" />
+    <!-- Fedora crown -->
+    <path android:fillColor="#FF1E1650"
+        android:pathData="M39,50l2,-15c0.5,-3 3,-5 6,-5h14c3,0 5.5,2 6,5l2,15z" />
+    <!-- Hat band -->
+    <path android:fillColor="#FFEC4899"
+        android:pathData="M39.5,46h29l0.6,4h-30.2z" />
+    <!-- Brim -->
+    <path android:fillColor="#FF2A1F72"
+        android:pathData="M24,52c8,-4 20,-5 30,-5s22,1 30,5c0,3 -12,5 -30,5s-30,-2 -30,-5z" />
+</vector>
