@@ -26,11 +26,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --stacktrace
 
       - name: Rename APK
-        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/imposter-${{ github.ref_name }}.apk
+        run: mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/imposter-${{ github.ref_name }}.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -46,4 +46,4 @@ jobs:
             1. Aşağıdaki **`imposter-${{ github.ref_name }}.apk`** dosyasını telefonunuza indirin.
             2. İndirilen dosyaya tıklayın ve *"Bilinmeyen kaynaklara izin ver"* seçeneğini onaylayarak yükleyin.
             3. İyi eğlenceler! 🎉
-          files: app/build/outputs/apk/debug/*.apk
+          files: app/build/outputs/apk/release/*.apk

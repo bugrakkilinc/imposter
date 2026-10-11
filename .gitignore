@@ -9,3 +9,5 @@
 *.hprof
 captures/
 .externalNativeBuild
+*.apk
+
