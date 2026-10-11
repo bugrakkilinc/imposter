@@ -1,5 +1,8 @@
 # 🕵️‍♂️ Imposter — Android Parti Oyunu (Açık Kaynak)
 
+[![Download APK](https://img.shields.io/badge/İndir-APK%20(v1.0.0)-blue?style=for-the-badge&logo=android)](https://github.com/bugrakkilinc/imposter/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+
 Arkadaş ortamlarında tek bir telefon üzerinden oynanabilen (**Pass & Play**), tamamen ücretsiz, reklamsız ve **çevrimdışı (offline)** çalışan minimalist bir sosyal çıkarım / blöf oyunudur.
 
 Piyasadaki popüler imposter oyunlarının en iyi kategorileri ücretli abonelik veya rahatsız edici reklamlar arkasına saklamasına tepki olarak geliştirilmiştir. İsteyen herkes indirip oynayabilir, yeni kelimeler ekleyebilir veya kaynak kodunu çatallayarak (fork) geliştirebilir.

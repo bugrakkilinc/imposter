@@ -1,0 +1,49 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Rename APK
+        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/imposter-${{ github.ref_name }}.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: "Imposter ${{ github.ref_name }}"
+          body: |
+            ## 🕵️‍♂️ Imposter ${{ github.ref_name }} Yayında!
+            
+            Tamamen ücretsiz, reklamsız ve açık kaynak Android parti oyunu.
+            
+            ### 📱 Kurulum
+            1. Aşağıdaki **`imposter-${{ github.ref_name }}.apk`** dosyasını telefonunuza indirin.
+            2. İndirilen dosyaya tıklayın ve *"Bilinmeyen kaynaklara izin ver"* seçeneğini onaylayarak yükleyin.
+            3. İyi eğlenceler! 🎉
+          files: app/build/outputs/apk/debug/*.apk
