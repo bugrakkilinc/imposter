@@ -309,11 +309,7 @@ fun RevealScreen(vm: GameViewModel) {
     var seen by remember(i) { mutableStateOf(false) }
     val isImpostor = i in vm.impostors
     val last = i == vm.players.size - 1
-    val cardColor = when {
-        !holding -> Surface2
-        isImpostor -> Red
-        else -> Green
-    }
+    val cardColor = Surface2
 
     Column(
         Modifier.fillMaxSize().padding(24.dp),
@@ -335,7 +331,7 @@ fun RevealScreen(vm: GameViewModel) {
                 },
             contentAlignment = Alignment.Center
         ) {
-            val onCard = if (holding) OnAccent else TextMain
+            val onCard = TextMain
             if (!holding) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(20.dp)) {
                     Text(vm.players[i], fontSize = 38.sp, fontWeight = FontWeight.Bold, color = onCard, textAlign = TextAlign.Center)
