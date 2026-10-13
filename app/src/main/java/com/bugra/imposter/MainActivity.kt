@@ -5,6 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,19 +37,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Flat, low-contrast palette (easy on the eyes)
-private val Bg = Color(0xFF16181D)
-private val Surface1 = Color(0xFF1F2229)
-private val Surface2 = Color(0xFF292D36)
-private val Accent = Color(0xFF8E9BD6)
-private val OnAccent = Color(0xFF14161C)
-private val TextMain = Color(0xFFE4E6EC)
-private val TextSub = Color(0xFF9399A8)
-private val Red = Color(0xFFC9757C)
-private val Green = Color(0xFF7DB596)
-private val Amber = Color(0xFFD1A86B)
+// Modern, light & colorful palette
+private val Bg = Color(0xFFF4F3FA)
+private val Surface1 = Color(0xFFFFFFFF)
+private val Surface2 = Color(0xFFECEAF7)
+private val Accent = Color(0xFF6C5CE7)
+private val AccentLight = Color(0xFFA29BFE)
+private val OnAccent = Color(0xFFFFFFFF)
+private val TextMain = Color(0xFF1E1B3A)
+private val TextSub = Color(0xFF6E6A85)
+private val Red = Color(0xFFE5484D)
+private val Green = Color(0xFF12A37A)
+private val Amber = Color(0xFFE8963A)
+private val Pink = Color(0xFFFD79A8)
+private val Teal = Color(0xFF00B8A9)
 
-private val Scheme = darkColorScheme(
+/** Same gradient for every player's card, so the role can't be guessed from screen color/brightness. */
+private val CardBrush = Brush.linearGradient(listOf(Accent, AccentLight))
+private val HeaderBrush = Brush.linearGradient(listOf(Accent, Pink))
+
+private val Scheme = lightColorScheme(
     primary = Accent, onPrimary = OnAccent,
     background = Bg, onBackground = TextMain,
     surface = Surface1, onSurface = TextMain,
@@ -56,6 +67,10 @@ class MainActivity : ComponentActivity() {
     private val vm: GameViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+        )
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme(colorScheme = Scheme) {
@@ -101,15 +116,20 @@ fun SecondaryButton(text: String, onClick: () -> Unit) {
 
 /** Compact row: label on the left, value on the right, opens a popup when clicked. */
 @Composable
-fun MenuRow(label: String, value: String, onClick: () -> Unit) {
+fun MenuRow(label: String, value: String, emoji: String, tint: Color, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Surface1)
-            .clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 16.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Surface1)
+            .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-        Text(value, fontSize = 15.sp, color = TextSub)
-        Text("  ›", fontSize = 18.sp, color = TextSub)
+        Box(
+            Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(tint.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) { Text(emoji, fontSize = 20.sp) }
+        Spacer(Modifier.width(12.dp))
+        Text(label, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+        Text(value, fontSize = 15.sp, color = tint, fontWeight = FontWeight.SemiBold)
+        Text("  ›", fontSize = 20.sp, color = TextSub)
     }
 }
 
@@ -137,31 +157,43 @@ fun LobbyScreen(vm: GameViewModel) {
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalArrangement = Arrangement.SpaceBetween) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(Modifier.padding(top = 20.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                Image(painterResource(R.drawable.ic_launcher), null, Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)))
+            Row(
+                Modifier.padding(top = 16.dp, bottom = 8.dp).fillMaxWidth().clip(RoundedCornerShape(24.dp))
+                    .background(HeaderBrush).padding(18.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(painterResource(R.drawable.ic_launcher), null, Modifier.size(56.dp).clip(RoundedCornerShape(16.dp)))
                 Spacer(Modifier.width(14.dp))
-                Text("Imposter", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                Column {
+                    Text("Imposter", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text("Aranızdaki sahtekârı bulun", fontSize = 14.sp, color = Color.White.copy(alpha = 0.85f))
+                }
             }
 
-            MenuRow("Oyuncular", "${vm.players.size} kişi") { showPlayers = true }
-            MenuRow("Kategoriler", "${vm.selectedCategories.size} seçili") { showCategories = true }
+            MenuRow("Oyuncular", "${vm.players.size} kişi", "👥", Accent) { showPlayers = true }
+            MenuRow("Kategoriler", "${vm.selectedCategories.size} seçili", "🗂️", Teal) { showCategories = true }
 
             // Imposter count – compact stepper
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Surface1)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Surface1)
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Imposter sayısı", fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                Box(
+                    Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(Pink.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) { Text("🕵️", fontSize = 20.sp) }
+                Spacer(Modifier.width(12.dp))
+                Text("Imposter sayısı", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                 StepButton("−") { vm.changeImpostors(-1) }
-                Text("${vm.impostorCount}", fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
+                Text("${vm.impostorCount}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Accent,
                     modifier = Modifier.width(36.dp), textAlign = TextAlign.Center)
                 StepButton("+") { vm.changeImpostors(1) }
             }
 
             // Impostor options
             Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Surface1)
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Surface1)
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 ToggleRow("Kategori herkese gösterilsin", vm.showCategory) { vm.toggleShowCategory(it) }
@@ -309,7 +341,6 @@ fun RevealScreen(vm: GameViewModel) {
     var seen by remember(i) { mutableStateOf(false) }
     val isImpostor = i in vm.impostors
     val last = i == vm.players.size - 1
-    val cardColor = Surface2
 
     Column(
         Modifier.fillMaxSize().padding(24.dp),
@@ -322,7 +353,7 @@ fun RevealScreen(vm: GameViewModel) {
         }
 
         Box(
-            Modifier.fillMaxWidth().height(300.dp).clip(RoundedCornerShape(24.dp)).background(cardColor)
+            Modifier.fillMaxWidth().height(300.dp).clip(RoundedCornerShape(24.dp)).background(CardBrush)
                 .pointerInput(i) {
                     detectTapGestures(onPress = {
                         holding = true; seen = true
@@ -331,12 +362,12 @@ fun RevealScreen(vm: GameViewModel) {
                 },
             contentAlignment = Alignment.Center
         ) {
-            val onCard = TextMain
+            val onCard = Color.White
             if (!holding) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(20.dp)) {
                     Text(vm.players[i], fontSize = 38.sp, fontWeight = FontWeight.Bold, color = onCard, textAlign = TextAlign.Center)
                     Spacer(Modifier.height(14.dp))
-                    Text("Görmek için basılı tut", fontSize = 18.sp, fontWeight = FontWeight.Medium, color = TextSub)
+                    Text("Görmek için basılı tut", fontSize = 18.sp, fontWeight = FontWeight.Medium, color = onCard.copy(alpha = 0.8f))
                 }
             } else if (isImpostor) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(20.dp)) {

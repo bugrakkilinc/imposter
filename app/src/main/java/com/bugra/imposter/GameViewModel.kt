@@ -33,6 +33,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     var assigned by mutableStateOf<List<Pair<Category, Entry>>>(emptyList()) // DIFFERENT rounds only
     var revealIndex by mutableStateOf(0)
     var starter by mutableStateOf(0)
+    private val usedWords = mutableSetOf<String>()
 
     init {
         players.addAll(prefs.getString("players", "")!!.split("\n").filter { it.isNotBlank() })
@@ -97,23 +98,53 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     fun startRound() {
         val pool = ALL_CATEGORIES.filter { it.name in selectedCategories }
         if (pool.isEmpty() || players.size < 3) return
-        val cat = pool.random()
-        category = cat
-        val entry = cat.words.random()
-        word = entry.word
-        hintWord = entry.hint
-        assigned = emptyList()
 
-        roundType = if (trollMode) listOf(RoundType.ALL_IMPOSTER, RoundType.DIFFERENT).random() else RoundType.NORMAL
-        impostors = when (roundType) {
-            RoundType.NORMAL -> players.indices.shuffled().take(impostorCount).toSet()
-            RoundType.ALL_IMPOSTER -> players.indices.toSet()
-            RoundType.DIFFERENT -> emptySet()
+        val allEntries = pool.flatMap { c -> c.words.map { c to it } }
+        var available = allEntries.filter { it.second.word !in usedWords }
+
+        // If all words in the selected categories have been played, recycle the deck!
+        if (available.isEmpty()) {
+            val wordsInPool = allEntries.map { it.second.word }.toSet()
+            usedWords.removeAll(wordsInPool)
+            // Exclude the most recent word so it doesn't appear back-to-back across resets
+            available = if (allEntries.size > 1 && word.isNotEmpty()) {
+                allEntries.filter { it.second.word != word }
+            } else {
+                allEntries
+            }
         }
+
+        val isTrollRoll = trollMode && roundType == RoundType.NORMAL && (0..99).random() < 9
+        roundType = if (isTrollRoll) {
+            listOf(RoundType.ALL_IMPOSTER, RoundType.DIFFERENT).random()
+        } else {
+            RoundType.NORMAL
+        }
+
         if (roundType == RoundType.DIFFERENT) {
-            val all = pool.flatMap { c -> c.words.map { c to it } }.shuffled().distinctBy { it.second.word }
-            assigned = List(players.size) { all[it % all.size] }
+            val diffPool = allEntries.shuffled().distinctBy { it.second.word }
+            assigned = List(players.size) { diffPool[it % diffPool.size] }
+            val chosen = assigned.first()
+            category = chosen.first
+            word = chosen.second.word
+            hintWord = chosen.second.hint
+            impostors = emptySet()
+        } else {
+            assigned = emptyList()
+            val chosen = available.random()
+            category = chosen.first
+            val entry = chosen.second
+            word = entry.word
+            hintWord = entry.hint
+            usedWords.add(word)
+
+            impostors = when (roundType) {
+                RoundType.NORMAL -> players.indices.shuffled().take(impostorCount).toSet()
+                RoundType.ALL_IMPOSTER -> players.indices.toSet()
+                else -> emptySet()
+            }
         }
+
         starter = players.indices.random()
         revealIndex = 0
         screen = Screen.REVEAL
