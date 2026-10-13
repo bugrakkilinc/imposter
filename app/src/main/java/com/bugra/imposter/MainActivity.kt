@@ -37,43 +37,65 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Modern, light & colorful palette
-private val Bg = Color(0xFFF4F3FA)
-private val Surface1 = Color(0xFFFFFFFF)
-private val Surface2 = Color(0xFFECEAF7)
-private val Accent = Color(0xFF6C5CE7)
+// Palettes: Light and Dark
+private val LightScheme = lightColorScheme(
+    primary = Color(0xFF6C5CE7),
+    onPrimary = Color.White,
+    background = Color(0xFFF4F3FA),
+    onBackground = Color(0xFF1E1B3A),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF1E1B3A),
+    surfaceVariant = Color(0xFFECEAF7),
+    onSurfaceVariant = Color(0xFF6E6A85)
+)
+
+private val DarkScheme = darkColorScheme(
+    primary = Color(0xFF7C6EF2),
+    onPrimary = Color.White,
+    background = Color(0xFF12111A),
+    onBackground = Color(0xFFF3F2F8),
+    surface = Color(0xFF1E1C29),
+    onSurface = Color(0xFFF3F2F8),
+    surfaceVariant = Color(0xFF2A2738),
+    onSurfaceVariant = Color(0xFF9894A8)
+)
+
+private val Bg: Color @Composable get() = MaterialTheme.colorScheme.background
+private val Surface1: Color @Composable get() = MaterialTheme.colorScheme.surface
+private val Surface2: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+private val Accent: Color @Composable get() = MaterialTheme.colorScheme.primary
+private val OnAccent = Color.White
+private val TextMain: Color @Composable get() = MaterialTheme.colorScheme.onBackground
+private val TextSub: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+
 private val AccentLight = Color(0xFFA29BFE)
-private val OnAccent = Color(0xFFFFFFFF)
-private val TextMain = Color(0xFF1E1B3A)
-private val TextSub = Color(0xFF6E6A85)
 private val Red = Color(0xFFE5484D)
-private val Green = Color(0xFF12A37A)
+private val Green = Color(0xFF20BF6B)
 private val Amber = Color(0xFFE8963A)
 private val Pink = Color(0xFFFD79A8)
 private val Teal = Color(0xFF00B8A9)
 
 /** Same gradient for every player's card, so the role can't be guessed from screen color/brightness. */
-private val CardBrush = Brush.linearGradient(listOf(Accent, AccentLight))
-private val HeaderBrush = Brush.linearGradient(listOf(Accent, Pink))
-
-private val Scheme = lightColorScheme(
-    primary = Accent, onPrimary = OnAccent,
-    background = Bg, onBackground = TextMain,
-    surface = Surface1, onSurface = TextMain,
-    surfaceVariant = Surface2, onSurfaceVariant = TextSub
-)
+private val CardBrush: Brush @Composable get() = Brush.linearGradient(listOf(Accent, AccentLight))
+private val HeaderBrush: Brush @Composable get() = Brush.linearGradient(listOf(Accent, Pink))
 
 class MainActivity : ComponentActivity() {
     private val vm: GameViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
-        )
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme(colorScheme = Scheme) {
+            val isDark = vm.darkMode
+            DisposableEffect(isDark) {
+                enableEdgeToEdge(
+                    statusBarStyle = if (isDark) SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+                                     else SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
+                    navigationBarStyle = if (isDark) SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+                                         else SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+                )
+                onDispose {}
+            }
+            MaterialTheme(colorScheme = if (isDark) DarkScheme else LightScheme) {
                 Box(Modifier.fillMaxSize().background(Bg).systemBarsPadding()) {
                     CompositionLocalProvider(LocalContentColor provides TextMain) { App(vm) }
                 }
@@ -164,9 +186,16 @@ fun LobbyScreen(vm: GameViewModel) {
             ) {
                 Image(painterResource(R.drawable.ic_launcher), null, Modifier.size(56.dp).clip(RoundedCornerShape(16.dp)))
                 Spacer(Modifier.width(14.dp))
-                Column {
+                Column(Modifier.weight(1f)) {
                     Text("Imposter", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
                     Text("Aranızdaki sahtekârı bulun", fontSize = 14.sp, color = Color.White.copy(alpha = 0.85f))
+                }
+                Box(
+                    Modifier.size(42.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.2f))
+                        .clickable { vm.toggleDarkMode(!vm.darkMode) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(if (vm.darkMode) "☀️" else "🌙", fontSize = 20.sp)
                 }
             }
 
@@ -199,6 +228,7 @@ fun LobbyScreen(vm: GameViewModel) {
                 ToggleRow("Kategori herkese gösterilsin", vm.showCategory) { vm.toggleShowCategory(it) }
                 ToggleRow("Imposter ipucu alsın", vm.showHint) { vm.toggleShowHint(it) }
                 ToggleRow("Troll modu", vm.trollMode) { vm.toggleTroll(it) }
+                ToggleRow("Koyu tema", vm.darkMode) { vm.toggleDarkMode(it) }
             }
             if (vm.trollMode) Text(
                 "Her tur rastgele: ya herkes imposter olur ya da herkese farklı kelime verilir.",
@@ -223,7 +253,7 @@ private fun StepButton(label: String, onClick: () -> Unit) {
     Box(
         Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(Surface2).clickable(onClick = onClick),
         contentAlignment = Alignment.Center
-    ) { Text(label, fontSize = 20.sp, fontWeight = FontWeight.Medium) }
+    ) { Text(label, fontSize = 20.sp, fontWeight = FontWeight.Medium, color = TextMain) }
 }
 
 @Composable
@@ -283,7 +313,7 @@ fun PlayersDialog(vm: GameViewModel, onDismiss: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text("≡", fontSize = 20.sp, color = TextSub, modifier = Modifier.padding(horizontal = 10.dp))
-                                Text(p, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                                Text(p, fontSize = 16.sp, color = TextMain, modifier = Modifier.weight(1f))
                                 TextButton(onClick = { vm.removePlayer(vm.players.indexOf(p)) }) { Text("Sil", color = Red) }
                             }
                         }
@@ -409,7 +439,7 @@ fun StartScreen(vm: GameViewModel) {
         ) {
             Text("İlk söz hakkı", fontSize = 16.sp, color = TextSub)
             Spacer(Modifier.height(10.dp))
-            Text(vm.players[vm.starter], fontSize = 44.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+            Text(vm.players[vm.starter], fontSize = 44.sp, fontWeight = FontWeight.Bold, color = TextMain, textAlign = TextAlign.Center)
             Spacer(Modifier.height(18.dp))
             Text("Sırayla tek kelimelik ipucu verin, sonra oylayın.", textAlign = TextAlign.Center, color = TextSub, fontSize = 15.sp)
         }
@@ -452,7 +482,7 @@ fun ResultScreen(vm: GameViewModel) {
                         vm.players.forEachIndexed { i, p ->
                             Row {
                                 Text(p, fontSize = 16.sp, color = TextSub, modifier = Modifier.weight(1f))
-                                Text(vm.wordFor(i), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                                Text(vm.wordFor(i), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
                             }
                         }
                     }

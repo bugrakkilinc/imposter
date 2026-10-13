@@ -22,6 +22,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     var showCategory by mutableStateOf(true)
     var showHint by mutableStateOf(true)
     var trollMode by mutableStateOf(false)
+    var darkMode by mutableStateOf(false)
     var screen by mutableStateOf(Screen.LOBBY)
 
     // Round state
@@ -45,6 +46,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         showCategory = prefs.getBoolean("showCategory", true)
         showHint = prefs.getBoolean("showHint", true)
         trollMode = prefs.getBoolean("troll", false)
+        darkMode = prefs.getBoolean("darkMode", false)
     }
 
     private fun save() {
@@ -55,6 +57,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
             .putBoolean("showCategory", showCategory)
             .putBoolean("showHint", showHint)
             .putBoolean("troll", trollMode)
+            .putBoolean("darkMode", darkMode)
             .apply()
     }
 
@@ -81,6 +84,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     fun toggleShowCategory(v: Boolean) { showCategory = v; save() }
     fun toggleShowHint(v: Boolean) { showHint = v; save() }
     fun toggleTroll(v: Boolean) { trollMode = v; save() }
+    fun toggleDarkMode(v: Boolean) { darkMode = v; save() }
 
     fun toggleCategory(name: String) {
         if (name in selectedCategories) selectedCategories.remove(name) else selectedCategories.add(name)
